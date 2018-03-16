@@ -46,6 +46,10 @@ def train_cnn_rnn():
     with graph.as_default():
         session_conf = tf.ConfigProto(allow_soft_placement=True, log_device_placement=False)
         sess = tf.Session(config=session_conf)
+        X = tf.placeholder("float", [None, x_train.shape[1]])
+        Y = tf.placeholder("float", [None, y_train.shape[1]])        
+        #print(y_train.shape);
+        #print(y_train);
         with sess.as_default():
             cnn_rnn = TextCNNRNN(
                 embedding_mat=embedding_mat,
@@ -98,8 +102,9 @@ def train_cnn_rnn():
                     [global_step, cnn_rnn.loss, cnn_rnn.accuracy, cnn_rnn.num_correct, cnn_rnn.predictions], feed_dict)
                 return accuracy, loss, num_correct, predictions
 
-            saver = tf.train.Saver()
+            saver = tf.train.Saver(sharded = True)
             sess.run(tf.global_variables_initializer())
+
             # Training starts here
             train_batches = data_helper.batch_iter(list(zip(x_train, y_train)), params['batch_size'], params['num_epochs'])
             best_accuracy, best_at_step = 0, 0
@@ -131,8 +136,8 @@ def train_cnn_rnn():
 
             # Save the model files to trained_dir. predict.py needs trained model files. 
             saver.save(sess, trained_dir + "best_model.pb")
-            #path_export = tempfile.mkdtemp(dir='C:/tmp')
-            #tf.saved_model.simple_save(sess, path_export + '/train', inputs={"X": x_}, outputs={"Y": y_})
+            path_export = tempfile.mkdtemp(dir='C:/tmp')
+            tf.saved_model.simple_save(sess, path_export + '/train', inputs={"description": X}, outputs={"assignedto": Y})
             # Evaluate x_test and y_test
             saver.restore(sess, checkpoint_prefix + '-' + str(best_at_step))
             test_batches = data_helper.batch_iter(list(zip(x_test, y_test)), params['batch_size'], 1, shuffle=False)
