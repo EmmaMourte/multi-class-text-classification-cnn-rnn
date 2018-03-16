@@ -27,7 +27,7 @@ def clean_str(s):
 def load_embeddings(vocabulary):
 	word_embeddings = {}
 	for word in vocabulary:
-		word_embeddings[word] = np.random.uniform(-0.25, 0.25, 300)
+		word_embeddings[word] = np.random.uniform(-0.25, 0.25, 30)
 	return word_embeddings
 
 def pad_sentences(sentences, padding_word="<PAD/>", forced_sequence_length=15):
