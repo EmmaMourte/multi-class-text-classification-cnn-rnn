@@ -1,16 +1,9 @@
-import os
 import re
-import sys
-import json
-import pickle
 import logging
 import itertools
 import numpy as np
 import pandas as pd
-import gensim as gs
-from pprint import pprint
 from collections import Counter
-from tensorflow.contrib import learn
 
 logging.getLogger().setLevel(logging.INFO)
 
@@ -37,7 +30,7 @@ def load_embeddings(vocabulary):
 		word_embeddings[word] = np.random.uniform(-0.25, 0.25, 300)
 	return word_embeddings
 
-def pad_sentences(sentences, padding_word="<PAD/>", forced_sequence_length=None):
+def pad_sentences(sentences, padding_word="<PAD/>", forced_sequence_length=15):
 	"""Pad setences during training or prediction"""
 	if forced_sequence_length is None: # Train
 		sequence_length = max(len(x) for x in sentences)
@@ -52,7 +45,7 @@ def pad_sentences(sentences, padding_word="<PAD/>", forced_sequence_length=None)
 		num_padding = sequence_length - len(sentence)
 
 		if num_padding < 0: # Prediction: cut off the sentence if it is longer than the sequence length
-			logging.info('This sentence has to be cut off because it is longer than trained sequence length')
+			#logging.info('This sentence has to be cut off because it is longer than trained sequence length')
 			padded_sentence = sentence[0:sequence_length]
 		else:
 			padded_sentence = sentence + [padding_word] * num_padding
@@ -83,7 +76,7 @@ def batch_iter(data, batch_size, num_epochs, shuffle=True):
 			yield shuffled_data[start_index:end_index]
 
 def load_data(filename):
-	df = pd.read_csv(filename, compression='zip')
+	df = pd.read_csv(filename, compression='zip', encoding='latin-1')
 	selected = ['Category', 'Descript']
 	non_selected = list(set(df.columns) - set(selected))
 
